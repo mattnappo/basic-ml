@@ -1,3 +1,4 @@
+*.ignore.csv
 build
 dist
 _build
