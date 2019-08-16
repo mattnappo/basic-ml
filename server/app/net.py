@@ -44,7 +44,8 @@ class NeuralNet:
             metrics   = ['accuracy']
         )
 
-        model.fit(self.train_images, self.train_labels, epochs=5)
+        # model.fit(self.train_images, self.train_labels, epochs=5)
+        model.fit(self.train_images, self.train_labels, epochs=1)
         
         self.graph = tf.get_default_graph()
         self.model = model
@@ -57,10 +58,10 @@ class FashionNetPredictor:
     def __init__(self):
         pass
 
-    def predict(self, path):
+    def predict(self, model, graph, path):
         image = self.flatten_image(path)
 
-        prediction = self.predict_(image)
+        prediction = self.predict_(model, graph, image)
         self.plot(prediction, image)
 
     def flatten_image(self, path):
@@ -83,11 +84,11 @@ class FashionNetPredictor:
         
         return data
 
-    def predict_(self, model, image):
+    def predict_(self, model, graph, image):
         # with self.network.graph.as_default():
         # return self.network.model.predict([[image]])
-
-        return model.predict([[image]])
+        with graph.as_default():
+            return model.predict([[image]])
 
     def plot_image_predict(self, prediction_vectors, image):
         prediction_vector = prediction_vectors[0]
