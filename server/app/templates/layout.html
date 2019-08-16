@@ -1,0 +1,29 @@
+<html lang="en">
+  <head>
+    <title>Doki-Doki Encryption</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/bootstrap/css/bootstrap.min.css">
+    <style>
+      .big {
+        height: 275px;
+      }
+      #choose_file input[type=file] {
+        color: #fff;
+        background-color: #007bff;
+        border-color: #007bff
+      }
+    </style>
+  </head>
+
+  <body>
+    {% include "includes/_navbar.html" %}
+    <div class="container">
+      {% block body %}{% endblock %}
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="static/bootstrap/js/bootstrap.min.js"></script>
+  </body>
+
+<html>

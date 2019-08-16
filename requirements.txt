@@ -1,0 +1,4 @@
+wtforms
+Flask
+flask-wtf
+pillow

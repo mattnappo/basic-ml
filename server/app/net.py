@@ -49,12 +49,13 @@ class NeuralNet:
 class FashionNetPredictor:
     def __init__(self, network, path):
         self.network = network
+        self.path = path
 
         self.image = None
-        self.flatten_image(path)
+        self.flatten_image(self.path)
 
-        prediction = self.predict()
-        self.plot(prediction)
+        self.prediction = self.predict()
+        self.plot(self.prediction)
 
     def flatten_image(self, path):
         img = Image.open(path).convert('F')
@@ -135,7 +136,9 @@ class FashionNetPredictor:
         self.plot_value_array_predict(prediction)
 
         plt.tight_layout()
-        plt.show()
+        
+        # plt.show()
+        plt.savefig('somefile.png')
 
 net = NeuralNet()
 
