@@ -22,8 +22,6 @@ class NeuralNet:
         self.prepare_dataset()
         self.create_model()
 
-        self.graph = tf.get_default_graph()
-
     def prepare_dataset(self):
         mnist = kr.datasets.fashion_mnist
         (self.train_images, self.train_labels), (self.test_images, self.test_labels) = mnist.load_data()
@@ -32,7 +30,7 @@ class NeuralNet:
         self.test_images  = self.test_images  / 255
 
     def create_model(self):
-        self.model = kr.Sequential([
+        model = kr.Sequential([
             kr.layers.Flatten(
                 input_shape = (28, 28)
             ),
@@ -40,29 +38,41 @@ class NeuralNet:
             kr.layers.Dense(len(labels), activation=tf.nn.softmax)
         ])
 
-        self.model.compile(
+        model.compile(
             optimizer = 'adam',
             loss      = 'sparse_categorical_crossentropy',
             metrics   = ['accuracy']
         )
 
-        self.model.fit(self.train_images, self.train_labels, epochs=5)
+        model.fit(self.train_images, self.train_labels, epochs=5)
+        
+        self.graph = tf.get_default_graph()
+        self.model = model
 
 class FashionNetPredictor:
-    def __init__(self, network):
-        self.network = network
-        self.graph = self.network.graph
+    # def __init__(self, network):
+    #     self.network = network
+    #     self.graph = self.network.graph
+    
+    def __init__(self):
+        pass
 
     def predict(self, path):
         image = self.flatten_image(path)
 
-        prediction = self.predict(image)
+        prediction = self.predict_(image)
         self.plot(prediction, image)
 
     def flatten_image(self, path):
         img = Image.open(path).convert('F')
-        img = img.resize((28, 28))
         WIDTH, HEIGHT = img.size
+
+        if WIDTH != 28 or HEIGHT != 28:
+            img = img.resize((28, 28))
+            
+        WIDTH, HEIGHT = img.size
+
+        print(img.size)
 
         data = list(img.getdata())
         data = [data[offset:offset + WIDTH] for offset in range(0, WIDTH * HEIGHT, WIDTH)]
@@ -73,9 +83,11 @@ class FashionNetPredictor:
         
         return data
 
-    def predict_(self, image):
-        with self.graph.as_default():
-            return self.network.model.predict([[image]])
+    def predict_(self, model, image):
+        # with self.network.graph.as_default():
+        # return self.network.model.predict([[image]])
+
+        return model.predict([[image]])
 
     def plot_image_predict(self, prediction_vectors, image):
         prediction_vector = prediction_vectors[0]

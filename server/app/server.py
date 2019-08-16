@@ -36,7 +36,7 @@ def upload_file():
 
     if request.method == 'POST':
 
-        if 'file' not in request.files :
+        if 'file' not in request.files:
             flash('No file part')
             return redirect(request.url)
 
@@ -52,9 +52,11 @@ def upload_file():
             file.save(PATH)
             session['filename'] = filename
             
-            prediction = fashion_net.predict('./static/uploads/' + secure_filename(file.filename))
+            
+            with net.graph.as_default():
+                prediction = fashion_net.predict(net.model, './static/uploads/' + secure_filename(file.filename))
 
-            print('' + str(prediction) + '\n##########')
+            print('\n# # # # # # # # # # # # # # #' + str(prediction) + '\n# # # # # # # # # # # # # # #')
             return render_template("predict.html", prediction=prediction)
 
     else:
