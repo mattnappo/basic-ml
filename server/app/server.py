@@ -11,7 +11,6 @@ import random, os
 import hashlib
 import random
 
-thing = ""
 from tensorflow.python.keras.backend import set_session
 from tensorflow.python.keras.models import load_model
 
@@ -46,8 +45,8 @@ model.compile(
     metrics   = ['accuracy']
 )
 
-# model.fit(train_images, train_labels, epochs=5)
-model.fit(train_images, train_labels, epochs=1)
+model.fit(train_images, train_labels, epochs=5)
+# model.fit(train_images, train_labels, epochs=1)
 
 predictions_ = model.predict(test_images)
 print(predictions_)
@@ -157,9 +156,7 @@ def plot(prediction, image, filename):
     
     name = md5(filename + str(random.random()))
     # plt.show()
-    thing = name
     plt.savefig('./static/graphs/' + name + '.png')
-    
 
 def md5(s):
     hash_object = hashlib.md5(s.encode())
@@ -184,6 +181,7 @@ def index():
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
+    global thing
     session['filename'] = ""
 
     if request.method == 'POST':
