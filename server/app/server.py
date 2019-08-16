@@ -11,8 +11,7 @@ def md5(s):
     
 net = NeuralNet()
 
-# fashion_net = FashionNetPredictor(net)
-fashion_net = FashionNetPredictor()
+fashion_net = FashionNetPredictor(net)
 
 UPLOAD_FOLDER = 'static/uploads/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg'])
@@ -33,37 +32,35 @@ def index():
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
-    with net.graph.as_default():
-        session['filename'] = ""
+    session['filename'] = ""
 
-        if request.method == 'POST':
+    if request.method == 'POST':
 
-            if 'file' not in request.files:
-                flash('No file part')
-                return redirect(request.url)
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
 
-            file = request.files['file']
+        file = request.files['file']
+        
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            PATH = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(PATH)
+            session['filename'] = filename
             
-            if file.filename == '':
-                flash('No selected file')
-                return redirect(request.url)
+            abs_path = os.path.abspath(UPLOAD_FOLDER + secure_filename(file.filename))
 
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                PATH = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(PATH)
-                session['filename'] = filename
-                
-                abs_path = os.path.abspath('./static/uploads/' + secure_filename(file.filename))
+            prediction = fashion_net.predict(abs_path)
 
-                # with net.graph.as_default():
-                prediction = fashion_net.predict(abs_path)
+            print('\n# # # # # # # # # # # # # # #' + str(prediction) + '\n# # # # # # # # # # # # # # #')
+            return render_template("predict.html", prediction=prediction)
 
-                print('\n# # # # # # # # # # # # # # #' + str(prediction) + '\n# # # # # # # # # # # # # # #')
-                return render_template("predict.html", prediction=prediction)
-
-        else:
-            session['filename'] = ""
+    else:
+        session['filename'] = ""
 
     return render_template("predict.html")
 
@@ -73,4 +70,4 @@ def uploaded_file(filename):
 
 if __name__ == "__main__":
     app.secret_key = 'super secret key'
-    app.run(host= '0.0.0.0', debug=True)
+    app.run(host= '0.0.0.0', debug=True, threaded=False)

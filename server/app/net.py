@@ -4,6 +4,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 
+import functools
+
+def lazy_property(function):
+    attribute = '_cache_' + function.__name__
+
+    @property
+    @functools.wraps(function)
+    def decorator(self):
+        if not hasattr(self, attribute):
+            setattr(self, attribute, function(self))
+        return getattr(self, attribute)
+
+    return decorator
+
 labels = [
     'T-shirt/top',
     'Trouser',
@@ -47,17 +61,17 @@ class NeuralNet:
         # model.fit(self.train_images, self.train_labels, epochs=5)
         model.fit(self.train_images, self.train_labels, epochs=1)
         
-        self.graph = tf.get_default_graph()
+        # graph = tf.get_default_graph()
         self.model = model
 
-class FashionNetPredictor:
-    # def __init__(self, network):
-    #     self.network = network
-    #     self.graph = self.network.graph
-    
-    # def __init__(self):
-    #     pass
+        tf.initialize_variables()
 
+class FashionNetPredictor:
+    def __init__(self, network):
+        self.network = network
+        # self.graph = self.network.graph
+
+    @lazy_property
     def predict(self, path):
         image = self.flatten_image(path)
 
@@ -84,9 +98,8 @@ class FashionNetPredictor:
         
         return data
 
+    @lazy_property
     def predict_(self, image):
-        # with self.network.graph.as_default():
-        # return self.network.model.predict([[image]])
         return self.network.model.predict([[image]])
 
     def plot_image_predict(self, prediction_vectors, image):
