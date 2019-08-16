@@ -10,8 +10,19 @@ from PIL import Image
 import random, os
 import hashlib
 
-global graph, model
+from tensorflow.python.keras.backend import set_session
+from tensorflow.python.keras.models import load_model
+
+# tf_config = some_custom_config
+# sess = tf.Session(config=tf_config)
+
+sess = tf.Session()
+
 graph = tf.get_default_graph()
+
+# IMPORTANT: models have to be loaded AFTER SETTING THE SESSION for keras! 
+# Otherwise, their weights will be unavailable in the threads after the session there has been set
+set_session(sess)
 
 mnist = kr.datasets.fashion_mnist
 (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
@@ -40,10 +51,7 @@ predictions_ = model.predict(test_images)
 print(predictions_)
 print('\n\n\n')
 
-tf.add_to_collection(
-    'model',
-    model
-)
+
 
 # graph = tf.get_default_graph()
 
@@ -190,13 +198,18 @@ def predict():
 
             image = flatten_image(abs_path)
 
-            print(tf.global_variables)
-            # with graph.as_default():
-            # prediction = model.predict([[image]])
+            # print(tf.global_variables())
+            # predictor = tf.predict(image, name="Predict")
+            # with tf.Session() as sess:
+            #     print(sess.run(predictor))
+            global sess
+            global graph
+            with graph.as_default():
+                set_session(sess)
+                prediction = model.predict([[image]])
+                print('\n# # # # # # # # # # # # # # #' + str(prediction) + '\n# # # # # # # # # # # # # # #')
 
-
-            # print('\n# # # # # # # # # # # # # # #' + str(prediction) + '\n# # # # # # # # # # # # # # #')
-            return render_template("predict.html", prediction=prediction)
+            return render_template("predict.html", prediction='nothing')
 
     else:
         session['filename'] = ""
