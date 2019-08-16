@@ -12,7 +12,7 @@
         </form>
         {% if session['filename']!="" %}
           <p class="card-text" style="margin-top:1%">Image:</p>
-          <img src="{{ url_for('static', filename='graphs/' + session['filename']) }}" />
+          <img src="{{ url_for('static', filename='graphs/' + session['filename'] + '.png') }}" />
         {% endif %}
       </div>
     </div>

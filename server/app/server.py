@@ -84,8 +84,9 @@ def predict_image(path, filename):
         prediction = model.predict([[image]])
 
     plot(prediction, image, filename)
-
-    return labels[prediction]
+    
+    final_prediction = np.argmax(prediction)
+    return labels[final_prediction]
 
 def plot_image_predict(prediction_vectors, image):
     prediction_vector = prediction_vectors[0]
@@ -98,7 +99,9 @@ def plot_image_predict(prediction_vectors, image):
     plt.imshow(image, cmap=plt.cm.binary)
     
     predicted_label = np.argmax(prediction_vector)
-        
+    print(predicted_label)
+    print('\n\n\n\n')
+
     plt.xlabel(
         'Guess: {} ({:2.0f} % certain)'.format(
             labels[predicted_label],
