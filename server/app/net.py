@@ -53,13 +53,15 @@ class FashionNetPredictor:
 
         self.image = None
         self.flatten_image(self.path)
+        
+        self.network.model._make_predict_function()
 
         self.prediction = self.predict()
         self.plot(self.prediction)
 
     def flatten_image(self, path):
         img = Image.open(path).convert('F')
-        img.resize((28, 28))
+        img = img.resize((28, 28))
         WIDTH, HEIGHT = img.size
 
         data = list(img.getdata())
@@ -140,6 +142,5 @@ class FashionNetPredictor:
         # plt.show()
         plt.savefig('somefile.png')
 
-net = NeuralNet()
-
-fashion_net = FashionNetPredictor(net, './data/custom_sneaker.jpg')
+# net = NeuralNet()
+# fashion_net = FashionNetPredictor(net, './data/custom_sneaker.jpg')

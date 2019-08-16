@@ -3,15 +3,19 @@ from wtforms import Form, StringField, TextAreaField, PasswordField, validators,
 from werkzeug.utils import secure_filename
 from net import NeuralNet, FashionNetPredictor
 import random, os
+import hashlib
 
+def md5(s):
+    hash_object = hashlib.md5(s.encode())
+    return hash_object.hexdigest()
+    
 net = NeuralNet()
 
 UPLOAD_FOLDER = 'static/uploads/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg'])
 
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
 app = Flask(__name__, static_url_path='/static')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 class EncryptForm(Form):
     text = TextAreaField("", [validators.DataRequired()])
@@ -24,7 +28,7 @@ def allowed_file(filename):
 def index():
     return render_template("home.html")
 
-@app.route('/decrypt', methods=['GET', 'POST'])
+@app.route('/predict', methods=['GET', 'POST'])
 def upload_file():
     session['filename'] = ""
 
@@ -46,16 +50,16 @@ def upload_file():
             file.save(PATH)
             session['filename'] = filename
             
-            fashion_net = FashionNetPredictor(net, './data/custom_sneaker.jpg')
+            fashion_net = FashionNetPredictor(net, './static/uploads/' + secure_filename(file.filename))
             prediction = fashion_net.prediction
 
             print(prediction)
-            return render_template("decrypt.html", prediction=prediction)
+            return render_template("predict.html", prediction=prediction)
 
     else:
         session['filename'] = ""
 
-    return render_template("decrypt.html")
+    return render_template("predict.html")
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):

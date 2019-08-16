@@ -1,14 +1,14 @@
 {% extends "layout.html" %}
 
 {% block body %}
-  <h1 class="text-center" style="margin-bottom:1.5%">Decrypt</h1>
+  <h1 class="text-center" style="margin-bottom:1.5%">Predict</h1>
   <div class="container">
     <div class="card">
       <div class="card-body">
         <h5 class="card-title">Upload Image</h5>
         <form method=post enctype=multipart/form-data action="">
           <input type=file id="choose_file" name=file><hr>
-          <button class="btn btn-primary" type="submit">Decrypt</button>
+          <button class="btn btn-primary" type="submit">Predict</button>
         </form>
         {% if session['filename']!="" %}
           <p class="card-text" style="margin-top:1%">Image:</p>
@@ -20,7 +20,7 @@
   {% if session['filename']!="" %}
     <div class="container">
       <div class="form-group">
-        <h5 style="margin-top: 1.5%">Decrypted Text</h5>
+        <h5 style="margin-top: 1.5%">The neural network predicts that your article of clothing is a:</h5>
         <textarea class="form-control big" disabled>{{ prediction }}</textarea>
       </div>
     </div>
