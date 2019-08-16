@@ -11,6 +11,8 @@ def md5(s):
     
 net = NeuralNet()
 
+fashion_net = FashionNetPredictor(net)
+
 UPLOAD_FOLDER = 'static/uploads/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg'])
 
@@ -50,10 +52,9 @@ def upload_file():
             file.save(PATH)
             session['filename'] = filename
             
-            fashion_net = FashionNetPredictor(net, './static/uploads/' + secure_filename(file.filename))
-            prediction = fashion_net.prediction
+            prediction = fashion_net.predict('./static/uploads/' + secure_filename(file.filename))
 
-            print(prediction)
+            print('' + str(prediction) + '\n##########')
             return render_template("predict.html", prediction=prediction)
 
     else:

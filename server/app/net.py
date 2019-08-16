@@ -22,6 +22,8 @@ class NeuralNet:
         self.prepare_dataset()
         self.create_model()
 
+        self.graph = tf.get_default_graph()
+
     def prepare_dataset(self):
         mnist = kr.datasets.fashion_mnist
         (self.train_images, self.train_labels), (self.test_images, self.test_labels) = mnist.load_data()
@@ -47,17 +49,15 @@ class NeuralNet:
         self.model.fit(self.train_images, self.train_labels, epochs=5)
 
 class FashionNetPredictor:
-    def __init__(self, network, path):
+    def __init__(self, network):
         self.network = network
-        self.path = path
+        self.graph = self.network.graph
 
-        self.image = None
-        self.flatten_image(self.path)
-        
-        self.network.model._make_predict_function()
+    def predict(self, path):
+        image = self.flatten_image(path)
 
-        self.prediction = self.predict()
-        self.plot(self.prediction)
+        prediction = self.predict(image)
+        self.plot(prediction, image)
 
     def flatten_image(self, path):
         img = Image.open(path).convert('F')
@@ -71,10 +71,11 @@ class FashionNetPredictor:
             for j in range(len(data[i])):
                 data[i][j] = int(255 - data[i][j])
         
-        self.image = data
+        return data
 
-    def predict(self):
-        return self.network.model.predict([[self.image]])
+    def predict_(self, image):
+        with self.graph.as_default():
+            return self.network.model.predict([[image]])
 
     def plot_image_predict(self, prediction_vectors, image):
         prediction_vector = prediction_vectors[0]
@@ -128,11 +129,11 @@ class FashionNetPredictor:
         
         plot[predicted_label].set_color('red')
         
-    def plot(self, prediction):
+    def plot(self, prediction, image):
         plt.figure(figsize = (8, 4))
         plt.subplot(1, 2, 1)
 
-        self.plot_image_predict(prediction, self.image)
+        self.plot_image_predict(prediction, image)
         plt.subplot(1, 2, 2)
 
         self.plot_value_array_predict(prediction)
