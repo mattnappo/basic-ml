@@ -9,7 +9,9 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import random, os
 import hashlib
+import random
 
+thing = ""
 from tensorflow.python.keras.backend import set_session
 from tensorflow.python.keras.models import load_model
 
@@ -153,8 +155,11 @@ def plot(prediction, image, filename):
 
     plt.tight_layout()
     
+    name = md5(filename + str(random.random()))
     # plt.show()
-    plt.savefig('./static/graphs/' + filename + '.png')
+    thing = name
+    plt.savefig('./static/graphs/' + name + '.png')
+    
 
 def md5(s):
     hash_object = hashlib.md5(s.encode())
@@ -214,7 +219,7 @@ def predict():
                 set_session(sess)
 
                 prediction = predict_image(abs_path, filename)
-
+                session['filename'] = thing
                 # prediction = model.predict([[image]])
                 # print('\n# # # # # # # # # # # # # # #' + str(prediction) + '\n# # # # # # # # # # # # # # #')
 
