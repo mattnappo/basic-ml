@@ -32,37 +32,38 @@ def index():
     return render_template("home.html")
 
 @app.route('/predict', methods=['GET', 'POST'])
-def upload_file():
-    session['filename'] = ""
-
-    if request.method == 'POST':
-
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-
-        file = request.files['file']
-        
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            PATH = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(PATH)
-            session['filename'] = filename
-            
-            abs_path = os.path.abspath('./static/uploads/' + secure_filename(file.filename))
-
-            with net.graph.as_default():
-                prediction = fashion_net.predict(net.model, net.graph, abs_path)
-
-            print('\n# # # # # # # # # # # # # # #' + str(prediction) + '\n# # # # # # # # # # # # # # #')
-            return render_template("predict.html", prediction=prediction)
-
-    else:
+def predict():
+    with net.graph.as_default():
         session['filename'] = ""
+
+        if request.method == 'POST':
+
+            if 'file' not in request.files:
+                flash('No file part')
+                return redirect(request.url)
+
+            file = request.files['file']
+            
+            if file.filename == '':
+                flash('No selected file')
+                return redirect(request.url)
+
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                PATH = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(PATH)
+                session['filename'] = filename
+                
+                abs_path = os.path.abspath('./static/uploads/' + secure_filename(file.filename))
+
+                # with net.graph.as_default():
+                prediction = fashion_net.predict(abs_path)
+
+                print('\n# # # # # # # # # # # # # # #' + str(prediction) + '\n# # # # # # # # # # # # # # #')
+                return render_template("predict.html", prediction=prediction)
+
+        else:
+            session['filename'] = ""
 
     return render_template("predict.html")
 

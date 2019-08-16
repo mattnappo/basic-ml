@@ -55,13 +55,13 @@ class FashionNetPredictor:
     #     self.network = network
     #     self.graph = self.network.graph
     
-    def __init__(self):
-        pass
+    # def __init__(self):
+    #     pass
 
-    def predict(self, model, graph, path):
+    def predict(self, path):
         image = self.flatten_image(path)
 
-        prediction = self.predict_(model, graph, image)
+        prediction = self.predict_(image)
         self.plot(prediction, image)
 
     def flatten_image(self, path):
@@ -84,11 +84,10 @@ class FashionNetPredictor:
         
         return data
 
-    def predict_(self, model, graph, image):
+    def predict_(self, image):
         # with self.network.graph.as_default():
         # return self.network.model.predict([[image]])
-        with graph.as_default():
-            return model.predict([[image]])
+        return self.network.model.predict([[image]])
 
     def plot_image_predict(self, prediction_vectors, image):
         prediction_vector = prediction_vectors[0]
