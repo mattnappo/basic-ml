@@ -56,6 +56,8 @@ print('\n\n\n')
 # graph = tf.get_default_graph()
 
 def flatten_image(path):
+    print(path)
+    print('\n\n\n')
     img = Image.open(path).convert('F')
     WIDTH, HEIGHT = img.size
 
@@ -75,13 +77,15 @@ def flatten_image(path):
     
     return data
 
-def predict_image(path):
+def predict_image(path, filename):
     image = flatten_image(path)
 
     with graph.as_default():
         prediction = model.predict([[image]])
 
-    plot(prediction, image)
+    plot(prediction, image, filename)
+
+    return labels[prediction]
 
 def plot_image_predict(prediction_vectors, image):
     prediction_vector = prediction_vectors[0]
@@ -135,7 +139,7 @@ def plot_value_array_predict(prediction_vectors):
     
     plot[predicted_label].set_color('red')
     
-def plot(prediction, image):
+def plot(prediction, image, filename):
     plt.figure(figsize = (8, 4))
     plt.subplot(1, 2, 1)
 
@@ -147,7 +151,7 @@ def plot(prediction, image):
     plt.tight_layout()
     
     # plt.show()
-    plt.savefig('somefile.png')
+    plt.savefig('./static/graphs/' + filename + '.png')
 
 def md5(s):
     hash_object = hashlib.md5(s.encode())
@@ -192,11 +196,10 @@ def predict():
             file.save(PATH)
             session['filename'] = filename
             
-            abs_path = os.path.abspath(UPLOAD_FOLDER + secure_filename(file.filename))
+            abs_path = os.path.abspath(UPLOAD_FOLDER + filename)
 
             # prediction = predict_image(abs_path)
 
-            image = flatten_image(abs_path)
 
             # print(tf.global_variables())
             # predictor = tf.predict(image, name="Predict")
@@ -206,10 +209,13 @@ def predict():
             global graph
             with graph.as_default():
                 set_session(sess)
-                prediction = model.predict([[image]])
-                print('\n# # # # # # # # # # # # # # #' + str(prediction) + '\n# # # # # # # # # # # # # # #')
 
-            return render_template("predict.html", prediction='nothing')
+                prediction = predict_image(abs_path, filename)
+
+                # prediction = model.predict([[image]])
+                # print('\n# # # # # # # # # # # # # # #' + str(prediction) + '\n# # # # # # # # # # # # # # #')
+
+            return render_template("predict.html", prediction=prediction)
 
     else:
         session['filename'] = ""
