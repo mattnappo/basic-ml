@@ -1,77 +1,12 @@
-import tensorflow as tf
-from tensorflow import keras as kr
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
-
-import functools
-
-def lazy_property(function):
-    attribute = '_cache_' + function.__name__
-
-    @property
-    @functools.wraps(function)
-    def decorator(self):
-        if not hasattr(self, attribute):
-            setattr(self, attribute, function(self))
-        return getattr(self, attribute)
-
-    return decorator
-
-labels = [
-    'T-shirt/top',
-    'Trouser',
-    'Pullover',
-    'Dress',
-    'Coat',
-    'Sandal',
-    'Shirt',
-    'Sneaker',
-    'Bag',
-    'Ankle boot'
-]
-
-class NeuralNet:
-    def __init__(self):
-        self.prepare_dataset()
-        self.create_model()
-
-    def prepare_dataset(self):
-        mnist = kr.datasets.fashion_mnist
-        (self.train_images, self.train_labels), (self.test_images, self.test_labels) = mnist.load_data()
-
-        self.train_images = self.train_images / 255
-        self.test_images  = self.test_images  / 255
-
-    def create_model(self):
-        model = kr.Sequential([
-            kr.layers.Flatten(
-                input_shape = (28, 28)
-            ),
-            kr.layers.Dense(128, activation=tf.nn.relu),
-            kr.layers.Dense(len(labels), activation=tf.nn.softmax)
-        ])
-
-        model.compile(
-            optimizer = 'adam',
-            loss      = 'sparse_categorical_crossentropy',
-            metrics   = ['accuracy']
-        )
-
-        # model.fit(self.train_images, self.train_labels, epochs=5)
-        model.fit(self.train_images, self.train_labels, epochs=1)
-        
-        # graph = tf.get_default_graph()
-        self.model = model
-
-        tf.initialize_variables()
+from labels import labels
 
 class FashionNetPredictor:
-    def __init__(self, network):
-        self.network = network
-        # self.graph = self.network.graph
+    def __init__(self, model):
+        self.model = model
 
-    @lazy_property
     def predict(self, path):
         image = self.flatten_image(path)
 
@@ -98,9 +33,8 @@ class FashionNetPredictor:
         
         return data
 
-    @lazy_property
     def predict_(self, image):
-        return self.network.model.predict([[image]])
+        return self.model.predict([[image]])
 
     def plot_image_predict(self, prediction_vectors, image):
         prediction_vector = prediction_vectors[0]

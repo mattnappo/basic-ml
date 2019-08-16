@@ -1,17 +1,149 @@
 from flask import Flask, render_template, flash, request, redirect, url_for, session, send_from_directory, logging
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators, FileField
 from werkzeug.utils import secure_filename
-from net import NeuralNet, FashionNetPredictor
+from labels import labels
+import tensorflow as tf
+from tensorflow import keras as kr
+import numpy as np
+import matplotlib.pyplot as plt
+from PIL import Image
 import random, os
 import hashlib
+
+global graph, model
+graph = tf.get_default_graph()
+
+mnist = kr.datasets.fashion_mnist
+(train_images, train_labels), (test_images, test_labels) = mnist.load_data()
+
+train_images = train_images / 255
+test_images  = test_images  / 255
+
+model = kr.Sequential([
+    kr.layers.Flatten(
+        input_shape = (28, 28)
+    ),
+    kr.layers.Dense(128, activation=tf.nn.relu),
+    kr.layers.Dense(len(labels), activation=tf.nn.softmax)
+])
+
+model.compile(
+    optimizer = 'adam',
+    loss      = 'sparse_categorical_crossentropy',
+    metrics   = ['accuracy']
+)
+
+# model.fit(train_images, train_labels, epochs=5)
+model.fit(train_images, train_labels, epochs=1)
+
+predictions_ = model.predict(test_images)
+print(predictions_)
+print('\n\n\n')
+
+tf.add_to_collection(
+    'model',
+    model
+)
+
+# graph = tf.get_default_graph()
+
+def flatten_image(path):
+    img = Image.open(path).convert('F')
+    WIDTH, HEIGHT = img.size
+
+    if WIDTH != 28 or HEIGHT != 28:
+        img = img.resize((28, 28))
+        
+    WIDTH, HEIGHT = img.size
+
+    print(img.size)
+
+    data = list(img.getdata())
+    data = [data[offset:offset + WIDTH] for offset in range(0, WIDTH * HEIGHT, WIDTH)]
+
+    for i in range(len(data)):
+        for j in range(len(data[i])):
+            data[i][j] = int(255 - data[i][j])
+    
+    return data
+
+def predict_image(path):
+    image = flatten_image(path)
+
+    with graph.as_default():
+        prediction = model.predict([[image]])
+
+    plot(prediction, image)
+
+def plot_image_predict(prediction_vectors, image):
+    prediction_vector = prediction_vectors[0]
+    
+    plt.grid(False)
+    
+    plt.xticks([])
+    plt.yticks([])
+    
+    plt.imshow(image, cmap=plt.cm.binary)
+    
+    predicted_label = np.argmax(prediction_vector)
+        
+    plt.xlabel(
+        'Guess: {} ({:2.0f} % certain)'.format(
+            labels[predicted_label],
+            100 * np.max(prediction_vector)
+        )
+    )
+
+def plot_value_array_predict(prediction_vectors):
+    prediction_vector = prediction_vectors[0]
+    
+    plt.grid(False)
+    
+    plot = plt.bar(
+        range(len(labels)),
+        prediction_vector,
+        color = '#fa34ab'
+    )
+    
+    plt.xlabel('Clothing type')
+    plt.ylabel('Certainty')
+    
+    plt.xticks(
+        range(len(labels)),
+        labels,
+        size='small',
+        rotation=90
+    )
+    
+    plt.ylim([0, 1])
+
+    nums = []
+    for num in np.arange(0, 120, 20):
+        nums.append(str(num) + "%")
+
+    plt.yticks(np.arange(0, 1.2, .2), nums, size='small')
+
+    predicted_label = np.argmax(prediction_vector)
+    
+    plot[predicted_label].set_color('red')
+    
+def plot(prediction, image):
+    plt.figure(figsize = (8, 4))
+    plt.subplot(1, 2, 1)
+
+    plot_image_predict(prediction, image)
+    plt.subplot(1, 2, 2)
+
+    plot_value_array_predict(prediction)
+
+    plt.tight_layout()
+    
+    # plt.show()
+    plt.savefig('somefile.png')
 
 def md5(s):
     hash_object = hashlib.md5(s.encode())
     return hash_object.hexdigest()
-    
-net = NeuralNet()
-
-fashion_net = FashionNetPredictor(net)
 
 UPLOAD_FOLDER = 'static/uploads/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg'])
@@ -54,9 +186,16 @@ def predict():
             
             abs_path = os.path.abspath(UPLOAD_FOLDER + secure_filename(file.filename))
 
-            prediction = fashion_net.predict(abs_path)
+            # prediction = predict_image(abs_path)
 
-            print('\n# # # # # # # # # # # # # # #' + str(prediction) + '\n# # # # # # # # # # # # # # #')
+            image = flatten_image(abs_path)
+
+            print(tf.global_variables)
+            # with graph.as_default():
+            # prediction = model.predict([[image]])
+
+
+            # print('\n# # # # # # # # # # # # # # #' + str(prediction) + '\n# # # # # # # # # # # # # # #')
             return render_template("predict.html", prediction=prediction)
 
     else:
