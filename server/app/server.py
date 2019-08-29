@@ -14,15 +14,19 @@ import random
 from tensorflow.python.keras.backend import set_session
 from tensorflow.python.keras.models import load_model
 
-# tf_config = some_custom_config
-# sess = tf.Session(config=tf_config)
+def make_dirs():
+    graphs  = os.path.abspath('static/graphs')
+    uploads = os.path.abspath('static/uploads')
+
+    os.system('mkdir -p ' + graphs)
+    os.system('mkdir -p ' + uploads)
+
+make_dirs()
 
 sess = tf.Session()
 
 graph = tf.get_default_graph()
 
-# IMPORTANT: models have to be loaded AFTER SETTING THE SESSION for keras! 
-# Otherwise, their weights will be unavailable in the threads after the session there has been set
 set_session(sess)
 
 mnist = kr.datasets.fashion_mnist
@@ -46,19 +50,9 @@ model.compile(
 )
 
 model.fit(train_images, train_labels, epochs=5)
-# model.fit(train_images, train_labels, epochs=1)
-
 predictions_ = model.predict(test_images)
-print(predictions_)
-print('\n\n\n')
-
-
-
-# graph = tf.get_default_graph()
 
 def flatten_image(path):
-    print(path)
-    print('\n\n\n')
     img = Image.open(path).convert('F')
     WIDTH, HEIGHT = img.size
 
@@ -66,8 +60,6 @@ def flatten_image(path):
         img = img.resize((28, 28))
         
     WIDTH, HEIGHT = img.size
-
-    print(img.size)
 
     data = list(img.getdata())
     data = [data[offset:offset + WIDTH] for offset in range(0, WIDTH * HEIGHT, WIDTH)]
@@ -100,8 +92,6 @@ def plot_image_predict(prediction_vectors, image):
     plt.imshow(image, cmap=plt.cm.binary)
     
     predicted_label = np.argmax(prediction_vector)
-    print(predicted_label)
-    print('\n\n\n\n')
 
     plt.xlabel(
         'Guess: {} ({:2.0f} % certain)'.format(
@@ -135,7 +125,7 @@ def plot_value_array_predict(prediction_vectors):
 
     nums = []
     for num in np.arange(0, 120, 20):
-        nums.append(str(num) + "%")
+        nums.append(str(num) + '%')
 
     plt.yticks(np.arange(0, 1.2, .2), nums, size='small')
 
@@ -163,27 +153,27 @@ def md5(s):
 UPLOAD_FOLDER = 'static/uploads/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 global filename_seed
-filename_seed = ""
+filename_seed = ''
 
 app = Flask(__name__, static_url_path='/static')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 class EncryptForm(Form):
-    text = TextAreaField("", [validators.DataRequired()])
+    text = TextAreaField('', [validators.DataRequired()])
 
 def allowed_file(filename):
     return '.' in filename and \
         filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route("/")
+@app.route('/')
 def index():
-    return render_template("home.html")
+    return render_template('home.html')
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
-    session['filename'] = ""
-    session['graph'] = ""
-    filename_seed = ""
+    session['filename'] = ''
+    session['graph'] = ''
+    filename_seed = ''
 
     if request.method == 'POST':
 
@@ -208,13 +198,6 @@ def predict():
             
             abs_path = os.path.abspath(UPLOAD_FOLDER + hashed_filename)
 
-            # prediction = predict_image(abs_path)
-
-
-            # print(tf.global_variables())
-            # predictor = tf.predict(image, name="Predict")
-            # with tf.Session() as sess:
-            #     print(sess.run(predictor))
             global sess
             global graph
             with graph.as_default():
@@ -222,20 +205,18 @@ def predict():
 
                 prediction = predict_image(abs_path, hashed_filename)
                 session['graph'] = hashed_filename
-                # prediction = model.predict([[image]])
-                # print('\n# # # # # # # # # # # # # # #' + str(prediction) + '\n# # # # # # # # # # # # # # #')
 
-            return render_template("predict.html", prediction=prediction)
+            return render_template('predict.html', prediction=prediction)
 
     else:
-        session['filename'] = ""
+        session['filename'] = ''
 
-    return render_template("predict.html")
+    return render_template('predict.html')
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.secret_key = 'super secret key'
     app.run(host= '0.0.0.0', debug=True, threaded=False)
