@@ -1,3 +1,9 @@
+graphs/
+uploads/
+.DS_Store
+
+
+
 *.ignore.csv
 build
 dist
