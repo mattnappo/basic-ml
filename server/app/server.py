@@ -143,7 +143,7 @@ def plot_value_array_predict(prediction_vectors):
     
     plot[predicted_label].set_color('red')
     
-def plot(prediction, image, filename, hashed_name):
+def plot(prediction, image, hashed_name):
     plt.figure(figsize = (8, 4))
     plt.subplot(1, 2, 1)
 
@@ -201,7 +201,7 @@ def predict():
             filename = secure_filename(file.filename)
             
             filename_seed = str(random.random())
-            hashed_filename = md5(filename + filename_seed)
+            hashed_filename = md5(filename + filename_seed) + '.png'
             path = os.path.join(app.config['UPLOAD_FOLDER'], hashed_filename)
             file.save(path)
             session['filename'] = hashed_filename
