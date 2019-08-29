@@ -78,13 +78,13 @@ def flatten_image(path):
     
     return data
 
-def predict_image(path, filename):
+def predict_image(path, hashed_name):
     image = flatten_image(path)
 
     with graph.as_default():
         prediction = model.predict([[image]])
 
-    plot(prediction, image, filename)
+    plot(prediction, image, hashed_name)
     
     final_prediction = np.argmax(prediction)
     return labels[final_prediction]
@@ -143,7 +143,7 @@ def plot_value_array_predict(prediction_vectors):
     
     plot[predicted_label].set_color('red')
     
-def plot(prediction, image, filename):
+def plot(prediction, image, filename, hashed_name):
     plt.figure(figsize = (8, 4))
     plt.subplot(1, 2, 1)
 
@@ -154,16 +154,16 @@ def plot(prediction, image, filename):
 
     plt.tight_layout()
     
-    name = md5(filename + str(random.random()))
-    # plt.show()
-    plt.savefig('./static/graphs/' + name + '.png')
+    plt.savefig('./static/graphs/' + hashed_name + '.png')
 
 def md5(s):
     hash_object = hashlib.md5(s.encode())
     return hash_object.hexdigest()
 
 UPLOAD_FOLDER = 'static/uploads/'
-ALLOWED_EXTENSIONS = set(['png', 'jpg'])
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
+global filename_seed
+filename_seed = ""
 
 app = Flask(__name__, static_url_path='/static')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -181,8 +181,9 @@ def index():
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
-    global thing
     session['filename'] = ""
+    session['graph'] = ""
+    filename_seed = ""
 
     if request.method == 'POST':
 
@@ -198,11 +199,14 @@ def predict():
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            PATH = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(PATH)
-            session['filename'] = filename
             
-            abs_path = os.path.abspath(UPLOAD_FOLDER + filename)
+            filename_seed = str(random.random())
+            hashed_filename = md5(filename + filename_seed)
+            path = os.path.join(app.config['UPLOAD_FOLDER'], hashed_filename)
+            file.save(path)
+            session['filename'] = hashed_filename
+            
+            abs_path = os.path.abspath(UPLOAD_FOLDER + hashed_filename)
 
             # prediction = predict_image(abs_path)
 
@@ -216,8 +220,8 @@ def predict():
             with graph.as_default():
                 set_session(sess)
 
-                prediction = predict_image(abs_path, filename)
-                session['filename'] = thing
+                prediction = predict_image(abs_path, hashed_filename)
+                session['graph'] = hashed_filename
                 # prediction = model.predict([[image]])
                 # print('\n# # # # # # # # # # # # # # #' + str(prediction) + '\n# # # # # # # # # # # # # # #')
 

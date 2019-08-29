@@ -2,3 +2,8 @@ wtforms
 Flask
 flask-wtf
 pillow
+tensorflow
+seaborn
+matplotlib
+numpy
+pandas

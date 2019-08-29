@@ -12,16 +12,16 @@
         </form>
         {% if session['filename']!="" %}
           <p class="card-text" style="margin-top:1%">Image:</p>
-          <img src="{{ url_for('static', filename='graphs/' + session['filename'] + '.png') }}" />
+          <img src="{{ url_for('static', filename='uploads/' + session['filename']) }}" style="height: 100px;width:100px;"/>
         {% endif %}
       </div>
     </div>
   </div>
-  {% if session['filename']!="" %}
+  {% if session['graph']!="" %}
     <div class="container">
       <div class="form-group">
-        <h5 style="margin-top: 1.5%">The neural network predicts that your article of clothing is a:</h5>
-        <textarea class="form-control big" disabled>{{ prediction }}</textarea>
+        <h5 style="margin-top: 1.5%">The neural network predicts that your article of clothing is a <b>{{ prediction }}</b></h5>
+        <img src="{{ url_for('static', filename='graphs/' + session['graph'] + '.png') }}" />
       </div>
     </div>
   {% endif %}
